@@ -1,27 +1,70 @@
 ---
 title: "Computational Musicology Portfolio"
 author: "Noor Verbrugge"
-format: html
+format:
+  dashboard:
+    theme: lumen
 editor: visual
 ---
 
-## Quarto
+# Portfolio
 
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
+## Intro
 
-## Running Code
+### Over dit project
 
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+Schrijf 5–8 regels: wat is computational musicology, wat is de class corpus, wat ga je laten zien?
 
-```{r}
-1 + 1
-```
+### Snelle navigatie
 
-You can add options to executable code like this
+-   Link naar GitHub repo
+-   Link naar je data / notebooks
+-   Wat staat waar?
 
-```{r}
-#| echo: false
-2 * 2
-```
+## Corpus overview
 
-The `echo: false` option disables the printing of code (only output is displayed).
+### Welke tracks zitten erin?
+
+Beschrijf kort je corpus. Voeg een tabel toe als je een dataframe hebt met track info.
+
+### Eerste inzichten
+
+1–2 kernpunten (bijv. tempo’s verschillen, genres, segmentstructuur, etc.)
+
+## Self-similarity / structuur
+
+### Chroma self-similarity
+
+Laat je chroma SSM zien + 4–6 regels interpretatie.
+
+### Timbre self-similarity
+
+Laat je timbre SSM zien + 4–6 regels interpretatie.
+
+## Keys & chords analysis
+
+### Track 1: key (toonsoort)
+
+Leg uit hoe je key bepaalt (bv. chroma → pitch class energie → match met major/minor profielen). Laat resultaat zien (key + plot).
+
+### Track 1: chords (optioneel als je het doet)
+
+Laat zien hoe je chords benadert (bv. top pitch classes per window, of template matching). Laat een simpele output zien + interpretatie.
+
+### Track 2 (optioneel)
+
+Herhaal kort voor tweede track.
+
+## Reflectie / conclusie
+
+### Wat valt op?
+
+3 bullet points.
+
+### Wat zou ik verbeteren?
+
+2 bullet points.
+
+### Code & reproducibility
+
+Waar staat je code? Hoe kan iemand dit opnieuw runnen?
