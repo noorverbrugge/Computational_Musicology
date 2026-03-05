@@ -1,9 +1,7 @@
 ---
 title: "Computational Musicology Portfolio"
 author: "Noor Verbrugge"
-format:
-  dashboard:
-    theme: lumen
+format: dashboard
 editor: visual
 ---
 
