@@ -70,9 +70,9 @@ ggplot(tracks, aes(x = danceability, y = energy, color = artist_group)) +
     y = "Energy", color = "Artist") + theme_minimal()
 ```
 
-## 
-**Chromagram – Locked Out of Heaven**
+## Analyse
 
+### Chromagram – Locked Out of Heaven
 ```{r load-chroma}
 chroma_bruno <- read_csv("chromagram_bruno.csv")
 ```
@@ -111,8 +111,7 @@ At certain moments, the chroma intensity becomes stronger. These moments often m
 
 The chromagram clearly shows harmonic repetition and confirms that the song has a strong and stable tonal focus. Compared to more harmonically complex genres, the pitch activity is concentrated around a limited group of notes. This supports the song’s clear pop style and strong tonal identity.
 
-## 
-**Cepstrogram – Locked Out of Heaven**
+### Cepstrogram – Locked Out of Heaven
 
 ```{r plot-timbre, fig.height=6, fig.width=10}
 # Hernoem TIME naar time
@@ -213,8 +212,7 @@ ssm_timbre <- make_ssm(timbre_bruno, time_col = "TIME", step = 2)
 plot_ssm(ssm_timbre, title = "Timbre-based Self-Similarity (Bruno Mars)")
 ```
 
-## 
-**Comparing Chromagram and Cepstrogram**
+### Comparing Chromagram and Cepstrogram
 
 The chroma-based self-similarity matrix shows clear block-like shapes along the main diagonal. These square or rectangular areas represent repeated harmonic sections, such as verses and choruses. The strong contrast between similar and different regions shows that harmony plays an important role in shaping the overall structure of the song. The repeating diagonal patterns reflect stable chord progressions and a consistent tonal centre.
 
