@@ -1,31 +1,27 @@
 ---
 title: "Computational Musicology Portfolio"
 author: "Noor Verbrugge"
+theme: journal
 format:
-  dashboard:
-    theme: lumen
+  html:
+    theme: minty
+    toc: true
 ---
 
 # Portfolio
 
-## Intro
+## 
+**Intro**
 
-### 
-**Over dit project**
-Schrijf 5–8 regels: wat is computational musicology, wat is de class corpus, wat ga je laten zien?
-
-### Snelle navigatie
+Computational musicology uses digital tools and data analysis to study musical structure, style, and performance. In this portfolio, I explore a small class corpus with songs by Bruno Mars and Michael Jackson. I use metadata such as tempo, danceability, energy, chromagrams, timbre features, tempo curves, and self-similarity matrices. The goal is to show how computational methods can reveal musical patterns that are harder to see by listening alone. In particular, I focus on structure, repetition, harmony, timbre, and tempo. Together, these visualisations give a clearer picture of how songs are organised over time.
 
 -   Link naar GitHub repo
 -   Link naar je data / notebooks
 -   Wat staat waar?
 
-## 
 **Corpus overview**
 
-### Welke tracks zitten erin?
-
-Beschrijf kort je corpus. Voeg een tabel toe als je een dataframe hebt met track info.
+This section gives a general overview of the class corpus. I combine my Bruno Mars and Michael Jackson track lists into one dataset, so that I can compare the two groups visually. The scatterplot below shows the relationship between danceability and energy. This gives a first impression of how the songs are distributed stylistically.
 
 ```{r setup, include=FALSE}
 library(flexdashboard)
@@ -35,13 +31,12 @@ library(dplyr)
 library(ggplot2)
 library(tidyr)
 library(forcats)
-library(grid)     # voor unit() en arrow() (soms nodig)
+library(grid)
 
-# (optioneel) algemene opties
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
-```{r}
+```{r, fig.width=12, fig.height=6, out.width="100%"}
 bruno_tracks <- read_csv("Bruno_corpus.csv") 
 michael_tracks <- read_csv("Michael_corpus.csv") 
 
@@ -70,18 +65,59 @@ ggplot(tracks, aes(x = danceability, y = energy, color = artist_group)) +
     y = "Energy", color = "Artist") + theme_minimal()
 ```
 
-## Analyse
+**Analyse**
 
-### Chromagram – Locked Out of Heaven
-```{r load-chroma}
+The scatterplot shows that both artist groups occupy a similar pop-oriented space, with generally moderate to high danceability and energy values. At the same time, there is still some variation across tracks, which suggests that not every song uses the same balance between groove and intensity.
+
+# Tempo
+
+## Histogram of Tempi in the Class Corpus
+
+This histogram shows the distribution of tempo values in the class corpus. Each bar represents how many tracks fall within a certain BPM range. This helps us see whether the songs tend to cluster around certain tempo ranges.
+
+```{r tempo, fig.width=12, fig.height=6, out.width="100%"}
+ggplot(tracks, aes(x = tempo, fill = artist_group)) +
+  geom_histogram(binwidth = 5, alpha = 0.7, position = "identity") +
+  labs(
+    title = "Histogram of Tempi in the Class Corpus",
+    x = "Tempo (BPM)",
+    y = "Number of Tracks",
+    fill = "Artist Group"
+  ) +
+  theme_minimal()
+```
+Most songs in the corpus fall within a medium tempo range that is typical for pop music. The Bruno Mars and Michael Jackson songs overlap quite strongly in their tempo distributions, which suggests that both artists often work within similar tempo conventions.
+
+**Tempo Curves for My Contributions**
+
+A tempo curve shows how the estimated tempo changes over time in a track. Unlike the Spotify tempo value, which is only one average BPM value, a tempo curve can reveal small fluctuations or expressive timing differences during the song.
+
+Instead of showing tempo changes within a single track, we can compare the overall tempo of the tracks in the corpus. This gives an idea of how fast different songs are relative to each other.
+```{r tempo-barplot, fig.width=12, fig.height=6, out.width="100%"}
+bruno_tracks_only <- tracks %>%
+  filter(artist_group == "Bruno Mars")
+
+ggplot(bruno_tracks_only, aes(x = reorder(track_name, tempo), y = tempo)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Tempo of Bruno Mars Tracks",
+    x = "Track",
+    y = "Tempo (BPM)"
+  ) +
+  theme_minimal()
+```
+The tempo curve shows that the tempo remains relatively stable throughout the track. This is typical for studio-produced pop music, where the tempo is usually fixed during recording. Small variations may appear due to beat-tracking estimation or subtle timing differences in the performance.
+
+# Chroma Features
+
+## Chromagram – Locked Out of Heaven
+
+```{r load-chroma, fig.width=12, fig.height=6, out.width="100%"}
 chroma_bruno <- read_csv("chromagram_bruno.csv")
-```
 
-```{r load-timbre}
 timbre_bruno <- read_csv("timbr_bruno.csv")
-```
 
-```{r plot-chroma, fig.height=6, fig.width=10}
 chroma_bruno <- chroma_bruno %>%
   rename(time = TIME)
 
@@ -104,16 +140,14 @@ ggplot(chroma_long, aes(x = time, y = pitch, fill = intensity)) +
   ) +
   theme_minimal()
 ```
-
 This chromagram was created in Sonic Visualiser using NNLS Chroma features. It shows how the different pitch classes (C–B) are distributed over time in the song. Several pitch classes appear brighter and more consistent throughout the track. This suggests that the song has a stable tonal centre and stays in the same key for most of the time. This matches what I hear: the harmony does not change very much, especially in the chorus, where the same chord progression repeats.
 
 At certain moments, the chroma intensity becomes stronger. These moments often match sections with higher musical energy, such as the chorus. The repeating horizontal patterns in the visualisation reflect the structured pop form of the song (verse–chorus–verse).
 
 The chromagram clearly shows harmonic repetition and confirms that the song has a strong and stable tonal focus. Compared to more harmonically complex genres, the pitch activity is concentrated around a limited group of notes. This supports the song’s clear pop style and strong tonal identity.
 
-### Cepstrogram – Locked Out of Heaven
-
-```{r plot-timbre, fig.height=6, fig.width=10}
+## Cepstrogram – Locked Out of Heaven
+```{r plot-timbre, fig.width=12, fig.height=6, out.width="100%"}
 # Hernoem TIME naar time
 timbre_bruno <- timbre_bruno %>%
   rename(time = TIME)
@@ -123,8 +157,7 @@ timbre_long <- timbre_bruno %>%
   pivot_longer(
     cols = -time,
     names_to = "bin",
-    values_to = "value"
-  )
+    values_to = "value")
 
 # Plot
 ggplot(timbre_long, aes(x = time, y = bin, fill = value)) +
@@ -137,7 +170,6 @@ ggplot(timbre_long, aes(x = time, y = bin, fill = value)) +
   ) +
   theme_minimal()
 ```
-
 The timbre visualisation shows how spectral energy is distributed across 21 frequency bins over time. In other words, it shows how the sound colour (timbre) changes during the song.
 
 Most frequency bins show relatively stable and strong intensity values throughout the track. This suggests that the production style is consistent and compressed. There are not a lot of changes in timbre between different sections of the song.
@@ -146,7 +178,7 @@ This corresponds to what I hear: the song keeps a steady, polished pop sound fro
 
 This fits with the tight, radio-oriented production style that is typical of Bruno Mars’ recordings.
 
-```{r load-files}
+```{r load-files, fig.width=12, fig.height=6, out.width="100%"}
 # Helper: maak een self-similarity matrix uit een feature-tabel
 # - df: data frame met time kolom + feature kolommen
 # - time_col: naam van tijdkolom (bv. "TIME")
@@ -199,21 +231,18 @@ plot_ssm <- function(ssm_obj, title = "SSM") {
     theme(panel.grid = element_blank())
   }
 ```
-
-```{r}
+```{r, fig.width=12, fig.height=6, out.width="100%"}
 chroma_bruno <- read_csv("chromagram_bruno.csv")
 ssm_chroma <- make_ssm(chroma_bruno, time_col = "TIME", step = 2)
 plot_ssm(ssm_chroma, title = "Chroma-based Self-Similarity (Bruno Mars)")
 ```
-
-```{r}
+```{r, fig.width=12, fig.height=6, out.width="100%"}
 timbre_bruno <- read_csv("timbr_bruno.csv")
 ssm_timbre <- make_ssm(timbre_bruno, time_col = "TIME", step = 2)
 plot_ssm(ssm_timbre, title = "Timbre-based Self-Similarity (Bruno Mars)")
 ```
 
-### Comparing Chromagram and Cepstrogram
-
+## Comparing Chromagram and Cepstrogram
 The chroma-based self-similarity matrix shows clear block-like shapes along the main diagonal. These square or rectangular areas represent repeated harmonic sections, such as verses and choruses. The strong contrast between similar and different regions shows that harmony plays an important role in shaping the overall structure of the song. The repeating diagonal patterns reflect stable chord progressions and a consistent tonal centre.
 
 In contrast, the timbre-based self-similarity matrix looks more uniform and dense. Although some structural boundaries are still visible, the contrast between sections is less strong. This suggests that while the harmony clearly repeats, the timbral characteristics (such as instrumentation, texture, and production details) remain relatively stable throughout the song.
