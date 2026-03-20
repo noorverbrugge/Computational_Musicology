@@ -35,7 +35,7 @@ library(grid)
 knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 ```
 
-![Danceability vs Energy](overview_plot.png)
+![](overview_plot.png)
 
 **Analyse**
   
@@ -47,36 +47,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE)
 
 This histogram shows the distribution of tempo values in the class corpus. Each bar represents how many tracks fall within a certain BPM range. This helps us see whether the songs tend to cluster around certain tempo ranges.
 
-![](tempo_distribution.png)
-
-Most songs in the corpus fall within a medium tempo range that is typical for pop music. The Bruno Mars and Michael Jackson songs overlap quite strongly in their tempo distributions, which suggests that both artists often work within similar tempo conventions.
-
-**Tempo Curves for My Contributions**
-  
-  A tempo curve shows how the estimated tempo changes over time in a track. Unlike the Spotify tempo value, which is only one average BPM value, a tempo curve can reveal small fluctuations or expressive timing differences during the song.
-
-Instead of showing tempo changes within a single track, we can compare the overall tempo of the tracks in the corpus. This gives an idea of how fast different songs are relative to each other.
-
-![](tempo_bruno.png)
-
-The tempo curve shows that the tempo remains relatively stable throughout the track. This is typical for studio-produced pop music, where the tempo is usually fixed during recording. Small variations may appear due to beat-tracking estimation or subtle timing differences in the performance.
-
-# Chroma Features
-
-## Chromagram – Locked Out of Heaven
-
-![](chromagram_bruno.png)
-
-This chromagram was created in Sonic Visualiser using NNLS Chroma features. It shows how the different pitch classes (C–B) are distributed over time in the song. Several pitch classes appear brighter and more consistent throughout the track. This suggests that the song has a stable tonal centre and stays in the same key for most of the time. This matches what I hear: the harmony does not change very much, especially in the chorus, where the same chord progression repeats.
-
-At certain moments, the chroma intensity becomes stronger. These moments often match sections with higher musical energy, such as the chorus. The repeating horizontal patterns in the visualisation reflect the structured pop form of the song (verse–chorus–verse).
-
-The chromagram clearly shows harmonic repetition and confirms that the song has a strong and stable tonal focus. Compared to more harmonically complex genres, the pitch activity is concentrated around a limited group of notes. This supports the song’s clear pop style and strong tonal identity.
-
-## Cepstrogram – Locked Out of Heaven
-
-```{r plot-timbre, fig.width=12, fig.height=6, out.width="100%"}
-library(tidyverse)
+```{r tempo, fig.width=12, fig.height=6, out.width="100%"}
 bruno_tracks <- read_csv("Bruno_corpus.csv")
 michael_tracks <- read_csv("Michael_corpus.csv")
 
@@ -93,8 +64,79 @@ tracks <- tracks %>%
     tempo = Tempo,
     loudness = Loudness)
 
+ggplot(tracks, aes(x = tempo, fill = artist_group)) +
+  geom_histogram(binwidth = 5, alpha = 0.7, position = "identity") +
+  labs(
+    title = "Histogram of Tempi in the Class Corpus",
+    x = "Tempo (BPM)",
+    y = "Number of Tracks",
+    fill = "Artist Group"
+  ) +
+  theme_minimal()
+```
+Most songs in the corpus fall within a medium tempo range that is typical for pop music. The Bruno Mars and Michael Jackson songs overlap quite strongly in their tempo distributions, which suggests that both artists often work within similar tempo conventions.
+
+**Tempo Curves for My Contributions**
+  
+  A tempo curve shows how the estimated tempo changes over time in a track. Unlike the Spotify tempo value, which is only one average BPM value, a tempo curve can reveal small fluctuations or expressive timing differences during the song.
+
+Instead of showing tempo changes within a single track, we can compare the overall tempo of the tracks in the corpus. This gives an idea of how fast different songs are relative to each other.
+```{r tempo-barplot, fig.width=12, fig.height=6, out.width="100%"}
+bruno_tracks_only <- tracks %>%
+  filter(artist_group == "Bruno Mars")
+
+ggplot(bruno_tracks_only, aes(x = reorder(track_name, tempo), y = tempo)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Tempo of Bruno Mars Tracks",
+    x = "Track",
+    y = "Tempo (BPM)"
+  ) +
+  theme_minimal()
+```
+The tempo curve shows that the tempo remains relatively stable throughout the track. This is typical for studio-produced pop music, where the tempo is usually fixed during recording. Small variations may appear due to beat-tracking estimation or subtle timing differences in the performance.
+
+# Chroma Features
+
+## Chromagram – Locked Out of Heaven
+
+```{r load-chroma, fig.width=12, fig.height=6, out.width="100%"}
+chroma_bruno <- read_csv("chromagram_bruno.csv")
+
 timbre_bruno <- read_csv("timbr_bruno.csv")
 
+chroma_bruno <- chroma_bruno %>%
+  rename(time = TIME)
+
+# Maak long format
+chroma_long <- chroma_bruno %>%
+  pivot_longer(
+    cols = -time,
+    names_to = "pitch",
+    values_to = "intensity"
+  )
+
+# Plot
+ggplot(chroma_long, aes(x = time, y = pitch, fill = intensity)) +
+  geom_tile() +
+  scale_fill_viridis_c() +
+  labs(
+    title = "Chromagram – Bruno Mars",
+    x = "Time (seconds)",
+    y = "Pitch Class"
+  ) +
+  theme_minimal()
+```
+This chromagram was created in Sonic Visualiser using NNLS Chroma features. It shows how the different pitch classes (C–B) are distributed over time in the song. Several pitch classes appear brighter and more consistent throughout the track. This suggests that the song has a stable tonal centre and stays in the same key for most of the time. This matches what I hear: the harmony does not change very much, especially in the chorus, where the same chord progression repeats.
+
+At certain moments, the chroma intensity becomes stronger. These moments often match sections with higher musical energy, such as the chorus. The repeating horizontal patterns in the visualisation reflect the structured pop form of the song (verse–chorus–verse).
+
+The chromagram clearly shows harmonic repetition and confirms that the song has a strong and stable tonal focus. Compared to more harmonically complex genres, the pitch activity is concentrated around a limited group of notes. This supports the song’s clear pop style and strong tonal identity.
+
+## Cepstrogram – Locked Out of Heaven
+
+```{r plot-timbre, fig.width=12, fig.height=6, out.width="100%"}
 # Hernoem TIME naar time
 timbre_bruno <- timbre_bruno %>%
   rename(time = TIME)
@@ -126,23 +168,11 @@ This corresponds to what I hear: the song keeps a steady, polished pop sound fro
 This fits with the tight, radio-oriented production style that is typical of Bruno Mars’ recordings.
 
 ```{r load-files, fig.width=12, fig.height=6, out.width="100%"}
-library(tidyverse)
-bruno_tracks <- read_csv("Bruno_corpus.csv")
-michael_tracks <- read_csv("Michael_corpus.csv")
-
-tracks <- bind_rows(
-  bruno_tracks  %>% mutate(artist_group = "Bruno Mars"),
-  michael_tracks %>% mutate(artist_group = "Michael Jackson"))
-
-tracks <- tracks %>%
-  rename(
-    track_name = `Track Name`,
-    danceability = Danceability,
-    energy = Energy,
-    valence = Valence,
-    tempo = Tempo,
-    loudness = Loudness)
-
+# Helper: maak een self-similarity matrix uit een feature-tabel
+# - df: data frame met time kolom + feature kolommen
+# - time_col: naam van tijdkolom (bv. "TIME")
+# - step: downsampling (bv. 2 = elke 2e frame, 5 = elke 5e frame) voor snelheid
+# - method: afstandsmaat (euclidean is prima)
 make_ssm <- function(df, time_col = "TIME", step = 2, method = "euclidean") {
   df <- df %>% slice(seq(1, n(), by = step))
   
@@ -209,63 +239,3 @@ The chroma-based self-similarity matrix shows clear block-like shapes along the 
 In contrast, the timbre-based self-similarity matrix looks more uniform and dense. Although some structural boundaries are still visible, the contrast between sections is less strong. This suggests that while the harmony clearly repeats, the timbral characteristics (such as instrumentation, texture, and production details) remain relatively stable throughout the song.
 
 Overall, the chroma matrix makes the formal harmonic structure easier to see, while the timbre matrix highlights the consistent and polished sound texture of the track.
-
-# Classification
-
-## Predicting artist
-
-```{r classification-plot, fig.width=7, fig.height=5, out.width="100%"}
-library(class)
-library(ggplot2)
-library(dplyr)
-
-data_model <- tracks %>%
-  select(artist_group, danceability, energy, valence, tempo, loudness) %>%
-  drop_na()
-
-set.seed(123)
-train_index <- sample(1:nrow(data_model), 0.7 * nrow(data_model))
-
-train_data <- data_model[train_index, ]
-test_data  <- data_model[-train_index, ]
-
-train_x <- train_data %>% select(-artist_group)
-test_x  <- test_data %>% select(-artist_group)
-
-train_y <- train_data$artist_group
-test_y  <- test_data$artist_group
-
-# Scale the features
-train_x_scaled <- scale(train_x)
-test_x_scaled <- scale(
-  test_x,
-  center = attr(train_x_scaled, "scaled:center"),
-  scale = attr(train_x_scaled, "scaled:scale")
-)
-
-# KNN model
-predictions <- knn(train = train_x_scaled, test = test_x_scaled, cl = train_y, k = 3)
-
-# Accuracy
-accuracy <- mean(predictions == test_y)
-
-# Confusion matrix as dataframe
-conf_matrix <- as.data.frame(table(Predicted = predictions, Actual = test_y))
-
-# Plot
-ggplot(conf_matrix, aes(x = Actual, y = Predicted, fill = Freq)) +
-  geom_tile() +
-  geom_text(aes(label = Freq), size = 6) +
-  labs(
-    title = paste("Confusion Matrix for KNN Classification\nAccuracy =", round(accuracy, 2)),
-    x = "Actual Artist",
-    y = "Predicted Artist",
-    fill = "Count"
-  ) +
-  theme_minimal()
-```
-
-**Analyse**
-The classification model uses musical features such as danceability, energy, tempo, valence, and loudness to predict whether a track belongs to Bruno Mars or Michael Jackson. The KNN model achieves an accuracy of approximately r round(accuracy, 2).
-
-This result shows that there are measurable differences between the two artists, even though their music also overlaps in style. The model does not achieve perfect accuracy, which reflects the fact that both artists operate within a similar pop genre. However, the model is still able to capture subtle stylistic patterns in the data.
